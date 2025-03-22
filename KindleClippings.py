@@ -3,8 +3,11 @@ import re
 import io
 import os
 import argparse
+
+from loguru import logger
 from fpdf import FPDF
 import docx
+
 
 def remove_chars(s, end_directory=""):
     """
@@ -39,6 +42,7 @@ def insert_line_break_in_pdf(pdf_file: FPDF, num_breaks: int = 1) -> FPDF:
 
     return pdf_file
 
+
 def insert_bar_separator_in_pdf(pdf_file: FPDF):
     """
     Inserts a bar separator in a pdf, useful to separate highlights
@@ -51,7 +55,9 @@ def insert_bar_separator_in_pdf(pdf_file: FPDF):
     return pdf_file
 
 
-def prepare_pdf_document(highlights: str, include_clip_meta = False, title: str = "Your Notes And Highlights") -> FPDF:
+def prepare_pdf_document(
+    highlights: str, include_clip_meta=False, title: str = "Your Notes And Highlights"
+) -> FPDF:
     """
     Will create pdf document from the notes
 
@@ -66,7 +72,7 @@ def prepare_pdf_document(highlights: str, include_clip_meta = False, title: str 
     pdf_file = insert_line_break_in_pdf(pdf_file, 3)
     pdf_file.multi_cell(0, 5, title, align="C")
     pdf_file = insert_line_break_in_pdf(pdf_file, 2)
-    
+
     meta_regex_pattern = r"(Your.*\| Added on)"
     for highlight_line in highlights:
         # create muti-cell pdf object and add text to it
@@ -102,7 +108,9 @@ def convert_to_format(path, file_name, format, include_clip_meta=False):
 
         paragraph = txt_file.read().split("\n")
         if format == "pdf":
-            pdf_file = prepare_pdf_document(paragraph, include_clip_meta, file_name[:-4])
+            pdf_file = prepare_pdf_document(
+                paragraph, include_clip_meta, file_name[:-4]
+            )
             pdf_file.output(path + output_file_name)
 
         elif format == "docx":
@@ -133,12 +141,16 @@ def create_file_by_type(end_directory, format, include_clip_meta=False):
 
     for file in files:
         if file[-3:] == "txt":
-            output_files.append(convert_to_format(end_directory, file, format, include_clip_meta))
+            output_files.append(
+                convert_to_format(end_directory, file, format, include_clip_meta)
+            )
 
     return output_files
 
 
-def parse_clippings(source_file, end_directory, encoding="utf-8", format="txt", include_clip_meta=False):
+def parse_clippings(
+    source_file, end_directory, encoding="utf-8", format="txt", include_clip_meta=True
+):
     """
     Each clipping always consists of 5 lines:
     - title line
@@ -206,8 +218,10 @@ def parse_clippings(source_file, end_directory, encoding="utf-8", format="txt", 
                     outfile.write("\n...\n\n")
 
     # create additional file based on format
-    if format in ["pdf","docx"]:
-        formatted_out_files = create_file_by_type(end_directory, format, include_clip_meta)
+    if format in ["pdf", "docx"]:
+        formatted_out_files = create_file_by_type(
+            end_directory, format, include_clip_meta
+        )
         output_files.update(formatted_out_files)
     else:
         print("Invalid format mentioned. Only txt file will be created")
@@ -222,17 +236,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract kindle clippings into a folder with nice text files"
     )
-    parser.add_argument("-source", type=str, default="/Volumes/Kindle")
+    parser.add_argument("-source", type=str, default="/Volumes/Kindle/documents/")
     parser.add_argument("-destination", type=str, default="./")
     parser.add_argument("-encoding", type=str, default="utf8")
     parser.add_argument("-format", type=str, default="txt")
-    parser.add_argument("-include_clip_meta", type=bool, default=False)
+    parser.add_argument("-include_clip_meta", action="store_true")
     args = parser.parse_args()
+    logger.debug(args)
 
     if args.source[-4:] == ".txt":
         source_file = args.source
-    elif args.source[-1] == "/":
-        source_file = args.source + "/My Clippings.txt"
     else:
         source_file = args.source + "/My Clippings.txt"
 
@@ -241,4 +254,6 @@ if __name__ == "__main__":
     else:
         destination = args.destination + "/KindleClippings/"
 
-    parse_clippings(source_file, destination, args.encoding, args.format, args.include_clip_meta)
+    parse_clippings(
+        source_file, destination, args.encoding, args.format, args.include_clip_meta
+    )
