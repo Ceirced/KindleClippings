@@ -28,13 +28,17 @@ def test_highlight():
     assert highlights[0].author == "Neil Strauss"
     assert highlights[0].start_position == 6470
     assert highlights[0].end_position == 6471
-    assert highlights[0].created_at == "2023-09-25 22:42:15"
+    assert (
+        highlights[0].created_at.strftime("%Y-%m-%d %H:%M:%S") == "2023-09-25 22:42:15"
+    )
 
     assert highlights[1].book_title == "The Game"
     assert highlights[1].author == "Neil Strauss"
     assert highlights[1].start_position == 6520
     assert highlights[1].end_position == 6520
-    assert highlights[1].created_at == "2023-09-25 22:48:35"
+    assert (
+        highlights[1].created_at.strftime("%Y-%m-%d %H:%M:%S") == "2023-09-25 22:48:35"
+    )
 
     assert (
         highlights[2].book_title
@@ -44,4 +48,6 @@ def test_highlight():
     assert highlights[2].page == 49
     assert highlights[2].start_position == 738
     assert highlights[2].end_position == 740
-    assert highlights[2].created_at == "2024-09-16 22:36:09"
+    assert (
+        highlights[2].created_at.strftime("%Y-%m-%d %H:%M:%S") == "2024-09-16 22:36:09"
+    )
