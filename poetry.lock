@@ -211,6 +211,17 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=3.0.11,<3.1.0)"]
 
 [[package]]
+name = "mdutils"
+version = "1.6.0"
+description = "Useful package for creating Markdown files while executing python code."
+optional = false
+python-versions = "^3.6"
+groups = ["main"]
+files = [
+    {file = "mdutils-1.6.0.tar.gz", hash = "sha256:647f3cf00df39fee6c57fa6738dc1160fce1788276b5530c87d43a70cdefdaf1"},
+]
+
+[[package]]
 name = "packaging"
 version = "24.2"
 description = "Core utilities for Python packages"
@@ -410,4 +421,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "75783556ce994fadbd05fc3b6257aba0b05f0b02a83f01dc06e3636a2fe3e79c"
+content-hash = "f5d15bdd689a5dc3a08db80124c801d7c97a7a4c0b8e0753ab43c631a798c56c"

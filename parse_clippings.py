@@ -1,11 +1,14 @@
 from pathlib import Path
-
-# import ordererdict
 from collections import OrderedDict
 
 from loguru import logger
+import mdutils
 
 from src.clippings import parse_clipping, Clipping, Note, Highlight, Bookmark
+
+OUTOUT_DIR = Path("output")
+if not OUTOUT_DIR.exists():
+    OUTOUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # read the txt file
@@ -45,8 +48,13 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
             print(
                 f"Clipping author {clipping.author} does not match the book title {book_title} author {author}"
             )
-    file_name = f"{book_title} - {author}.txt"
+    file_name = f"{book_title} - {author}.md"
     file_path = Path(file_name)
+    if file_path.exists():
+        file_path.unlink()
+    # create a new file
+    md_file = mdutils.MdUtils(file_name=str(OUTOUT_DIR / file_name.replace("/", "-")))
+    # add the clippings to the file
 
     notes = [clipping for clipping in clippings if isinstance(clipping, Note)]
 
@@ -56,27 +64,23 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
     matched_notes_and_highlights, unmatched_notes = match_notes_and_hightlights(
         notes, highlights
     )
-
     if len(unmatched_notes) > 0:
         logger.warning(
             f"did not match {len(unmatched_notes)} with highlights in {book_title} by {author}"
         )
-        print(f"book_title: {book_title}")
-        for note in unmatched_notes:
-            print(f"UNMTACHED note: {note}\n position: {note.position}\n")
+        print(unmatched_notes)
+        return
+    if len(matched_notes_and_highlights) == 0:
+        return
+    for note, highlight in matched_notes_and_highlights:
+        if note.page:
+            md_file.new_line(f"{highlight.page}")
+        md_file.new_line(highlight.created_at.strftime("%A, %d. %B %Y %H:%M"))
+        md_file.new_line(f">{highlight.text}\n")
+        md_file.new_line(note.text + "\n\n\n\n\n")
 
-        # for highlight in highlights:
-        #     print(f"highlight: {highlight}\n position: {highlight.position}\n")
-    if len(matched_notes_and_highlights) == len(notes) and len(notes) > 0:
-        logger.success(
-            f"All {len(matched_notes_and_highlights)} notes matched with highlights in {book_title} by {author}"
-        )
-
-    print(f"\n\n\n")
-
-    logger.info(
-        f'Found {len(notes)} notes, {len(highlights)} highlights and {len(bookmarks)} bookmarks in "{book_title}" by {author}'
-    )
+    # save the file
+    md_file.create_md_file()
 
 
 def match_notes_and_hightlights(notes: list[Note], highlights: list[Highlight]):
@@ -92,10 +96,7 @@ def match_notes_and_hightlights(notes: list[Note], highlights: list[Highlight]):
     for note in notes:
         # print(f"note: {note}\n position: {note.position}\n")
         for highlight in highlights:
-            if note.position in range(
-                highlight.position[0],
-                highlight.position[1] + 1,
-            ):
+            if note.position == highlight.position[1]:
                 matched_notes_and_highlights.append((note, highlight))
                 break
                 # highlights.remove(highlight)
