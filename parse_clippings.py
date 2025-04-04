@@ -2,9 +2,9 @@ from pathlib import Path
 from collections import OrderedDict
 
 from loguru import logger
-import mdutils
+import mdutils  # type: ignore
 
-from src.clippings import parse_clipping, Clipping, Note, Highlight, Bookmark
+from src.clippings import parse_clipping, Clipping, Note, Highlight
 
 OUTOUT_DIR = Path("output")
 if not OUTOUT_DIR.exists():
@@ -60,24 +60,45 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
 
     highlights = [clipping for clipping in clippings if isinstance(clipping, Highlight)]
 
-    bookmarks = [clipping for clipping in clippings if isinstance(clipping, Bookmark)]
-    matched_notes_and_highlights, unmatched_notes = match_notes_and_hightlights(
-        notes, highlights
+    matched_notes_and_highlights, unmatched_notes, unmatched_highlights = (
+        match_notes_and_hightlights(notes, highlights)
     )
     if len(unmatched_notes) > 0:
         logger.warning(
             f"did not match {len(unmatched_notes)} with highlights in {book_title} by {author}"
         )
-        print(unmatched_notes)
-        return
     if len(matched_notes_and_highlights) == 0:
         return
-    for note, highlight in matched_notes_and_highlights:
-        if note.page:
-            md_file.new_line(f"{highlight.page}")
+
+    sorted_highlights_with_matched_notes = sorted(
+        matched_notes_and_highlights
+        + [(None, highlight) for highlight in unmatched_highlights],
+        key=lambda x: x[1].position[0],
+    )
+
+    for note, highlight in sorted_highlights_with_matched_notes:
+        if highlight.page:
+            md_file.new_line(f"S {highlight.page}")
+        else:
+            md_file.new_line(f"P {highlight.position[0]}")
+
         md_file.new_line(highlight.created_at.strftime("%A, %d. %B %Y %H:%M"))
         md_file.new_line(f">{highlight.text}\n")
-        md_file.new_line(note.text + "\n\n\n\n\n")
+        if note:
+            md_file.new_line(note.text)
+        md_file.new_line("\n---\n")
+
+    if unmatched_notes:
+        md_file.new_line(f"## Unmatched Notes ({len(unmatched_notes)})\n")
+        # add the unmatched notes to the file
+        for note in unmatched_notes:
+            if note.page:
+                md_file.new_line(f"S {note.page}")
+            else:
+                md_file.new_line(f"P {note.position}")
+            md_file.new_line(note.created_at.strftime("%A, %d. %B %Y %H:%M"))
+            md_file.new_line(note.text)
+            md_file.new_line("\n---\n")
 
     # save the file
     md_file.create_md_file()
@@ -102,13 +123,13 @@ def match_notes_and_hightlights(notes: list[Note], highlights: list[Highlight]):
                 # highlights.remove(highlight)
         else:
             unmatched_notes.append(note)
-
-    unmatched_highlights = highlights
-    return matched_notes_and_highlights, unmatched_notes
+    matched_highlights = {highlight for note, highlight in matched_notes_and_highlights}
+    unmatched_highlights = set(highlights) - matched_highlights
+    return matched_notes_and_highlights, unmatched_notes, unmatched_highlights
 
 
 book_titles = list(clippings_by_book.keys())
 
 for book_title in book_titles:
-    clippings = clippings_by_book[book_title]
-    save_book_clippings_to_file(clippings)
+    parsed_clippings = clippings_by_book[book_title]
+    save_book_clippings_to_file(parsed_clippings)
