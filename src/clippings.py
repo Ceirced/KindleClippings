@@ -37,7 +37,7 @@ class Clipping:
         self,
         book_title: str,
         created_at: datetime,
-        position: int | tuple[int, int],
+        position,
         author: str,
         page: int | None = None,
         text: str | None = None,
