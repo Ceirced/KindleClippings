@@ -17,11 +17,5 @@
     <array>
         <string>/Volumes</string>
     </array>
-    
-    <key>StandardOutPath</key>
-    <string>/Users/cederic/projects/Archive/KindleClippings/kindle_usb_sync.log</string>
-    
-    <key>StandardErrorPath</key>
-    <string>/Users/cederic/projects/Archive/KindleClippings/kindle_usb_sync_error.log</string>
 </dict>
 </plist>

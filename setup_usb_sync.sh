@@ -18,6 +18,7 @@ function install() {
     echo "✓ USB-triggered sync installed"
     echo "  Will automatically sync when any volume is mounted"
     echo "  Much more efficient than continuous monitoring"
+    echo "  Sync activity will be logged to: $SCRIPT_DIR/.sync/sync.log"
 }
 
 function uninstall() {

@@ -3,3 +3,4 @@ My Clippings.txt
 .DS_Store
 output
 __pycache__
+.sync/
