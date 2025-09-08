@@ -15,6 +15,12 @@ log_message() {
 # Create sync directory if it doesn't exist
 mkdir -p "$SYNC_DIR"
 
+# Check if Kindle is connected before logging
+if [ ! -d "$KINDLE_VOLUME" ]; then
+    # Don't log when Kindle isn't connected to avoid spam
+    exit 0
+fi
+
 log_message "=== Kindle Sync Started ==="
 
 if [ -d "$KINDLE_VOLUME" ]; then
