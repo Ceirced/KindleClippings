@@ -48,12 +48,15 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
             print(
                 f"Clipping author {clipping.author} does not match the book title {book_title} author {author}"
             )
-    file_name = f"{book_title} - {author}.md"
-    file_path = Path(file_name)
+    # Replace forward slashes and colons in both title and author to avoid file path issues
+    safe_book_title = book_title.replace("/", "-").replace(":", " -")
+    safe_author = author.replace("/", "-").replace(":", " -")
+    file_name = f"{safe_book_title} - {safe_author}.md"
+    file_path = OUTOUT_DIR / file_name
     if file_path.exists():
         file_path.unlink()
     # create a new file
-    md_file = mdutils.MdUtils(file_name=str(OUTOUT_DIR / file_name.replace("/", "-")))
+    md_file = mdutils.MdUtils(file_name=str(file_path))
     # add the clippings to the file
 
     notes = [clipping for clipping in clippings if isinstance(clipping, Note)]

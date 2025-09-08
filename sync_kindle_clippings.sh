@@ -23,6 +23,23 @@ if [ -d "$KINDLE_VOLUME" ]; then
             LATEST_LINK="$DESTINATION_DIR/My Clippings.txt"
             ln -sf "$(basename "$DESTINATION_FILE")" "$LATEST_LINK"
             echo "✓ Created/updated symlink: My Clippings.txt -> $(basename "$DESTINATION_FILE")"
+            
+            echo "📚 Parsing clippings into individual book files..."
+            
+            # Copy the latest file to the expected location for parse_clippings.py
+            cp "$DESTINATION_FILE" "$DESTINATION_DIR/My Clippings.txt"
+            
+            # Run the parser using uv (unset VIRTUAL_ENV to avoid path mismatch warning)
+            cd "$DESTINATION_DIR"
+            unset VIRTUAL_ENV
+            uv run python parse_clippings.py
+            PARSE_RESULT=$?
+            
+            if [ $PARSE_RESULT -eq 0 ]; then
+                echo "✓ Successfully parsed clippings into individual book files"
+            else
+                echo "⚠ Warning: Failed to parse clippings (sync was successful though)"
+            fi
         else
             echo "✗ Error: Failed to copy the file"
             exit 1
