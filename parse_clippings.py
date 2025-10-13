@@ -37,6 +37,15 @@ for book in books:
     ]
 
 
+def add_properties(md_file: mdutils.MdUtils, author: str) -> mdutils.MdUtils:
+    md_file.new_line("---")
+    md_file.new_line("tags:")
+    md_file.new_line("  - book")
+    md_file.new_line("status:")
+    md_file.new_line(f"author: {author}")
+    md_file.new_line("---\n")
+
+
 def save_book_clippings_to_file(clippings: list[Clipping]):
     book_title = clippings[0].book_title
     author = clippings[0].author
@@ -51,13 +60,16 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
     # Replace forward slashes and colons in both title and author to avoid file path issues
     safe_book_title = book_title.replace("/", "-").replace(":", " -")
     safe_author = author.replace("/", "-").replace(":", " -")
-    file_name = f"{safe_book_title} - {safe_author}.md"
+    file_name = f"{safe_book_title}.md"
     file_path = OUTOUT_DIR / file_name
     if file_path.exists():
         file_path.unlink()
     # create a new file
     md_file = mdutils.MdUtils(file_name=str(file_path))
+    logger.debug(f'\n"{md_file.get_md_text()}"')
     # add the clippings to the file
+
+    add_properties(md_file=md_file, author=safe_author)
 
     notes = [clipping for clipping in clippings if isinstance(clipping, Note)]
 
@@ -86,9 +98,9 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
             md_file.new_line(f"P {highlight.position[0]}")
 
         md_file.new_line(highlight.created_at.strftime("%A, %d. %B %Y %H:%M"))
-        md_file.new_line(f">{highlight.text}\n")
+        md_file.new_paragraph(f"{highlight.text}", bold_italics_code="i")
         if note:
-            md_file.new_line(note.text)
+            md_file.new_line(f"\n{note.text}")
         md_file.new_line("\n---\n")
 
     if unmatched_notes:
@@ -104,7 +116,11 @@ def save_book_clippings_to_file(clippings: list[Clipping]):
             md_file.new_line("\n---\n")
 
     # save the file
-    md_file.create_md_file()
+    file = md_file.create_md_file()
+    data = md_file.get_md_text()
+    # delete the first 3 lines
+    data = "\n".join(data.split("\n")[4:])
+    file.rewrite_all_file(data=data)
 
 
 def match_notes_and_hightlights(notes: list[Note], highlights: list[Highlight]):
