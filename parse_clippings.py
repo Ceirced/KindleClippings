@@ -41,7 +41,7 @@ def add_properties(md_file: mdutils.MdUtils, author: str) -> mdutils.MdUtils:
     md_file.new_line("---")
     md_file.new_line("tags:")
     md_file.new_line("  - book")
-    md_file.new_line("status:")
+    md_file.new_line("status: read")
     md_file.new_line(f"author: {author}")
     md_file.new_line("---\n")
 
